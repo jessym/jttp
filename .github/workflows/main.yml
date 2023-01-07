@@ -36,9 +36,9 @@ jobs:
       - name: 'QA :: Unit Tests'
         run: npm run test
 
-      # - name: 'Deployment :: Publish to NPM'
-      #   if: ${{ github.ref == 'refs/heads/main' }}
-      #   run: |
-      #     npm config set //registry.npmjs.org/:_authToken ${{ secrets.NPM_TOKEN }}
-      #     npm publish --access public
-      #     npm config delete //registry.npmjs.org/:_authToken
+      - name: 'Deployment :: Publish to NPM'
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: |
+          npm config set //registry.npmjs.org/:_authToken ${{ secrets.NPM_TOKEN }}
+          npm publish --access public
+          npm config delete //registry.npmjs.org/:_authToken

@@ -3,17 +3,13 @@
 ## Creating an instance
 
 ```ts
-// jttpInstance.ts
-
-export const jttpInstance = new Jttp();
+const jttp = new Jttp();
 ```
 
 The class can also be instantiated with a configuration object:
 
 ```ts
-// jttpInstance.ts
-
-export const jttpInstance = new Jttp({
+const jttp = new Jttp({
   baseUrl: 'https://api.backend.com',
   requestInterceptor: (request) => Promise.resolve(request),
   responseErrorIntercepter: (request, response) => Promise.reject(response),
@@ -24,9 +20,9 @@ export const jttpInstance = new Jttp({
 ## Instance Request API
 
 ```ts
-jttpInstance.get('/users');
+jttp.get('/users');
 
-jttpInstance.post('/users', {
+jttp.post('/users', {
   // Request options
 });
 ```
@@ -45,7 +41,7 @@ type RequestOptions = {
 ## Instance Response API
 
 ```ts
-const response = await jttpInstance.get<User>('/users/123');
+const response = await jttp.get<User>('/users/123');
 ```
 
 Here, the response is an object with the following properties:
