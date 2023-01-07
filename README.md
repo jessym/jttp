@@ -1,15 +1,15 @@
-# Jttp: Lightweight HTTP Client
+# Lighttp: Lightweight HTTP Client
 
 ## Creating an instance
 
 ```ts
-const jttp = new Jttp();
+const lighttp = new Lighttp();
 ```
 
 The class can also be instantiated with a configuration object:
 
 ```ts
-const jttp = new Jttp({
+const lighttp = new Lighttp({
   baseUrl: 'https://api.backend.com',
   requestInterceptor: (request) => Promise.resolve(request),
   responseErrorIntercepter: (request, response) => Promise.reject(response),
@@ -20,9 +20,9 @@ const jttp = new Jttp({
 ## Instance Request API
 
 ```ts
-jttp.get('/users');
+lighttp.get('/users');
 
-jttp.post('/users', {
+lighttp.post('/users', {
   // Request options
 });
 ```
@@ -41,7 +41,7 @@ type RequestOptions = {
 ## Instance Response API
 
 ```ts
-const response = await jttp.get<User>('/users/123');
+const response = await lighttp.get<User>('/users/123');
 ```
 
 Here, the response is an object with the following properties:
