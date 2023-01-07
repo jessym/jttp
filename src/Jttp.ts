@@ -27,23 +27,23 @@ export class Jttp {
     this.responseSuccessInterceptor = responseSuccessInterceptor;
   }
 
-  public get<T>(url: string, options = {} as Omit<Jttp.RequestOptions, 'url' | 'method' | 'body' | 'bodyJson'>): Promise<Jttp.Response<T>> {
+  public get<T = any>(url: string, options = {} as Omit<Jttp.RequestOptions, 'url' | 'method' | 'body' | 'bodyJson'>): Promise<Jttp.Response<T>> {
     return this.makeRequest({ ...options, url, method: 'GET' });
   }
 
-  public post<T>(url: string, options = {} as Omit<Jttp.RequestOptions, 'url' | 'method'>): Promise<Jttp.Response<T>> {
+  public post<T = any>(url: string, options = {} as Omit<Jttp.RequestOptions, 'url' | 'method'>): Promise<Jttp.Response<T>> {
     return this.makeRequest({ ...options, url, method: 'POST' });
   }
 
-  public put<T>(url: string, options = {} as Omit<Jttp.RequestOptions, 'url' | 'method'>): Promise<Jttp.Response<T>> {
+  public put<T = any>(url: string, options = {} as Omit<Jttp.RequestOptions, 'url' | 'method'>): Promise<Jttp.Response<T>> {
     return this.makeRequest({ ...options, url, method: 'PUT' });
   }
 
-  public patch<T>(url: string, options = {} as Omit<Jttp.RequestOptions, 'url' | 'method'>): Promise<Jttp.Response<T>> {
+  public patch<T = any>(url: string, options = {} as Omit<Jttp.RequestOptions, 'url' | 'method'>): Promise<Jttp.Response<T>> {
     return this.makeRequest({ ...options, url, method: 'PATCH' });
   }
 
-  public delete<T>(url: string, options = {} as Omit<Jttp.RequestOptions, 'url' | 'method'>): Promise<Jttp.Response<T>> {
+  public delete<T = any>(url: string, options = {} as Omit<Jttp.RequestOptions, 'url' | 'method'>): Promise<Jttp.Response<T>> {
     return this.makeRequest({ ...options, url, method: 'DELETE' });
   }
 

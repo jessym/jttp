@@ -1,3 +1,1 @@
-import { Jttp } from './Jttp';
-
-export { Jttp };
+export * from './Jttp';
