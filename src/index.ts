@@ -1,10 +1,10 @@
-export class Lighttp {
+export class Yesttp {
 
   private readonly baseUrl: string | undefined;
   private readonly fetchInstance: typeof fetch;
-  private readonly requestInterceptor: Lighttp.RequestInterceptor;
-  private readonly responseErrorInterceptor: Lighttp.ResponseErrorInterceptor;
-  private readonly responseSuccessInterceptor: Lighttp.ResponseSuccessInterceptor;
+  private readonly requestInterceptor: Yesttp.RequestInterceptor;
+  private readonly responseErrorInterceptor: Yesttp.ResponseErrorInterceptor;
+  private readonly responseSuccessInterceptor: Yesttp.ResponseSuccessInterceptor;
 
   private static get windowFetch(): typeof fetch {
     if (typeof window !== 'undefined' && window.fetch) return window.fetch.bind(window);
@@ -15,11 +15,11 @@ export class Lighttp {
 
   public constructor({
     baseUrl = undefined,
-    fetchInstance = Lighttp.windowFetch,
-    requestInterceptor = Lighttp.defaultRequestInterceptor,
-    responseErrorIntercepter = Lighttp.defaultResponseErrorInterceptor,
-    responseSuccessInterceptor = Lighttp.defaultResponseSuccessInterceptor,
-  } = {} as Lighttp.ConstructorArgs) {
+    fetchInstance = Yesttp.windowFetch,
+    requestInterceptor = Yesttp.defaultRequestInterceptor,
+    responseErrorIntercepter = Yesttp.defaultResponseErrorInterceptor,
+    responseSuccessInterceptor = Yesttp.defaultResponseSuccessInterceptor,
+  } = {} as Yesttp.ConstructorArgs) {
     this.baseUrl = baseUrl;
     this.fetchInstance = fetchInstance;
     this.requestInterceptor = requestInterceptor;
@@ -27,27 +27,27 @@ export class Lighttp {
     this.responseSuccessInterceptor = responseSuccessInterceptor;
   }
 
-  public get<T = any>(url: string, options = {} as Omit<Lighttp.RequestOptions, 'url' | 'method' | 'body' | 'bodyJson'>): Promise<Lighttp.Response<T>> {
+  public get<T = any>(url: string, options = {} as Omit<Yesttp.RequestOptions, 'url' | 'method' | 'body' | 'bodyJson'>): Promise<Yesttp.Response<T>> {
     return this.makeRequest({ ...options, url, method: 'GET' });
   }
 
-  public post<T = any>(url: string, options = {} as Omit<Lighttp.RequestOptions, 'url' | 'method'>): Promise<Lighttp.Response<T>> {
+  public post<T = any>(url: string, options = {} as Omit<Yesttp.RequestOptions, 'url' | 'method'>): Promise<Yesttp.Response<T>> {
     return this.makeRequest({ ...options, url, method: 'POST' });
   }
 
-  public put<T = any>(url: string, options = {} as Omit<Lighttp.RequestOptions, 'url' | 'method'>): Promise<Lighttp.Response<T>> {
+  public put<T = any>(url: string, options = {} as Omit<Yesttp.RequestOptions, 'url' | 'method'>): Promise<Yesttp.Response<T>> {
     return this.makeRequest({ ...options, url, method: 'PUT' });
   }
 
-  public patch<T = any>(url: string, options = {} as Omit<Lighttp.RequestOptions, 'url' | 'method'>): Promise<Lighttp.Response<T>> {
+  public patch<T = any>(url: string, options = {} as Omit<Yesttp.RequestOptions, 'url' | 'method'>): Promise<Yesttp.Response<T>> {
     return this.makeRequest({ ...options, url, method: 'PATCH' });
   }
 
-  public delete<T = any>(url: string, options = {} as Omit<Lighttp.RequestOptions, 'url' | 'method'>): Promise<Lighttp.Response<T>> {
+  public delete<T = any>(url: string, options = {} as Omit<Yesttp.RequestOptions, 'url' | 'method'>): Promise<Yesttp.Response<T>> {
     return this.makeRequest({ ...options, url, method: 'DELETE' });
   }
 
-  private async makeRequest<T>(opts: Lighttp.RequestOptions): Promise<Lighttp.Response<T>> {
+  private async makeRequest<T>(opts: Yesttp.RequestOptions): Promise<Yesttp.Response<T>> {
     const options = await this.requestInterceptor({
       ...opts,
       url: this.constructCompleteUrl(opts),
@@ -70,7 +70,7 @@ export class Lighttp {
     return this.handleResponse(options, response);
   }
 
-  private async handleResponse<T>(request: Lighttp.RequestOptions, fetchResponse: Response): Promise<Lighttp.Response<T>> {
+  private async handleResponse<T>(request: Yesttp.RequestOptions, fetchResponse: Response): Promise<Yesttp.Response<T>> {
     let text: string | undefined;
     let json: T | undefined;
     let invalidJsonResponse = false;
@@ -82,7 +82,7 @@ export class Lighttp {
     } catch (ignored) {
       invalidJsonResponse = true;
     }
-    const response: Lighttp.Response<T> = {
+    const response: Yesttp.Response<T> = {
       headers: this.parseFetchHeaders(fetchResponse.headers || new Headers()),
       status: fetchResponse?.status,
       body: text as string,
@@ -103,7 +103,7 @@ export class Lighttp {
     return this.responseErrorInterceptor(request, response);
   }
 
-  private constructCompleteUrl({ url, searchParams }: Lighttp.RequestOptions): string {
+  private constructCompleteUrl({ url, searchParams }: Yesttp.RequestOptions): string {
     let completeUrl = '';
     if (url.match(/^https?:\/\//)) {
       completeUrl += url;
@@ -149,20 +149,20 @@ export class Lighttp {
 
 }
 
-export namespace Lighttp {
+export namespace Yesttp {
 
   export type RequestInterceptor = (request: RequestOptions) => Promise<RequestOptions>;
   export const defaultRequestInterceptor: RequestInterceptor = (request) => Promise.resolve(request);
 
   export type ResponseErrorInterceptor = (request: RequestOptions, response: ResponseWithOptionalBody) => Promise<any>;
   export const defaultResponseErrorInterceptor: ResponseErrorInterceptor = (request, response) => {
-    const error: Lighttp.ResponseError = { request, response };
+    const error: Yesttp.ResponseError = { request, response };
     console.error('An HTTP error occurred', error);
     throw error;
   };
 
   export type ResponseSuccessInterceptor = (request: RequestOptions, response: ResponseWithOptionalBody) => Promise<any>;
-  export const defaultResponseSuccessInterceptor: Lighttp.ResponseErrorInterceptor = (request, response) => Promise.resolve(response);
+  export const defaultResponseSuccessInterceptor: Yesttp.ResponseErrorInterceptor = (request, response) => Promise.resolve(response);
 
   export type ConstructorArgs = {
     baseUrl?: string;

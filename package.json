@@ -1,5 +1,5 @@
 {
-  "name": "lighttp",
+  "name": "yesttp",
   "license": "MIT",
   "version": "1.0.0-alpha.1",
   "main": "lib/index.js",
@@ -16,12 +16,12 @@
   "author": "Jessy <github@jessym.com>",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jessym/lighttp.git"
+    "url": "git+https://github.com/jessym/yesttp.git"
   },
   "bugs": {
-    "url": "https://github.com/jessym/lighttp/issues"
+    "url": "https://github.com/jessym/yesttp/issues"
   },
-  "homepage": "https://github.com/jessym/lighttp#readme",
+  "homepage": "https://github.com/jessym/yesttp#readme",
   "scripts": {
     "test": "jest",
     "testw": "jest --watch",

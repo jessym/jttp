@@ -1,6 +1,6 @@
-import { Lighttp } from './index';
+import { Yesttp } from './index';
 
-describe(Lighttp, () => {
+describe(Yesttp, () => {
 
   type MockedFetchResonse = {
     body: string | undefined;
@@ -30,7 +30,7 @@ describe(Lighttp, () => {
 
   it('should initialize without error and without constructor args', async () => {
     // When
-    new Lighttp();
+    new Yesttp();
 
     // Then
     expect(console.error).not.toHaveBeenCalled();
@@ -41,7 +41,7 @@ describe(Lighttp, () => {
     window.fetch = undefined as any;
 
     // When
-    new Lighttp();
+    new Yesttp();
 
     // Then
     expect(console.error).toHaveBeenCalledWith('Could not find fetch function on `global` or `window`; please make it available or provide a custom fetch function');
@@ -52,7 +52,7 @@ describe(Lighttp, () => {
     window.fetch = undefined as any;
 
     // When
-    new Lighttp({ fetchInstance: jest.fn() });
+    new Yesttp({ fetchInstance: jest.fn() });
 
     // Then
     expect(console.error).not.toHaveBeenCalled();
@@ -60,7 +60,7 @@ describe(Lighttp, () => {
 
   it('should be able to make a GET request', async () => {
     // When
-    await new Lighttp().get('/test');
+    await new Yesttp().get('/test');
 
     // Then
     expect(window.fetch).toHaveBeenCalledWith('/test', expect.objectContaining({
@@ -70,7 +70,7 @@ describe(Lighttp, () => {
 
   it('should be able to make a POST request', async () => {
     // When
-    await new Lighttp().post('/test');
+    await new Yesttp().post('/test');
 
     // Then
     expect(window.fetch).toHaveBeenCalledWith('/test', expect.objectContaining({
@@ -80,7 +80,7 @@ describe(Lighttp, () => {
 
   it('should be able to make a PUT request', async () => {
     // When
-    await new Lighttp().put('/test');
+    await new Yesttp().put('/test');
 
     // Then
     expect(window.fetch).toHaveBeenCalledWith('/test', expect.objectContaining({
@@ -90,7 +90,7 @@ describe(Lighttp, () => {
 
   it('should be able to make a PATCH request', async () => {
     // When
-    await new Lighttp().patch('/test');
+    await new Yesttp().patch('/test');
 
     // Then
     expect(window.fetch).toHaveBeenCalledWith('/test', expect.objectContaining({
@@ -100,7 +100,7 @@ describe(Lighttp, () => {
 
   it('should be able to make a DELETE request', async () => {
     // When
-    await new Lighttp().delete('/test');
+    await new Yesttp().delete('/test');
 
     // Then
     expect(window.fetch).toHaveBeenCalledWith('/test', expect.objectContaining({
@@ -110,7 +110,7 @@ describe(Lighttp, () => {
 
   it('should use the baseUrl to construct a final URL', async () => {
     // When
-    await new Lighttp({ baseUrl: 'https://api.backend.com' }).get('/users');
+    await new Yesttp({ baseUrl: 'https://api.backend.com' }).get('/users');
 
     // Then
     expect(window.fetch).toHaveBeenCalledWith('https://api.backend.com/users', expect.anything());
@@ -118,7 +118,7 @@ describe(Lighttp, () => {
 
   it('should ignore the baseUrl if a complete URL is provided in the request', async () => {
     // When
-    await new Lighttp({ baseUrl: 'https://api.backend.com' }).get('https://www.google.com/hello');
+    await new Yesttp({ baseUrl: 'https://api.backend.com' }).get('https://www.google.com/hello');
 
     // Then
     expect(window.fetch).toHaveBeenCalledWith('https://www.google.com/hello', expect.anything());
@@ -126,7 +126,7 @@ describe(Lighttp, () => {
 
   it('should remove a double slash when combining the baseUrl with the request URL', async () => {
     // When
-    await new Lighttp({ baseUrl: 'https://api.backend.com/' }).get('/users');
+    await new Yesttp({ baseUrl: 'https://api.backend.com/' }).get('/users');
 
     // Then
     expect(window.fetch).toHaveBeenCalledWith('https://api.backend.com/users', expect.anything());
@@ -134,7 +134,7 @@ describe(Lighttp, () => {
 
   it('should insert a single slash when combining the baseUrl with the request URL', async () => {
     // When
-    await new Lighttp({ baseUrl: 'https://api.backend.com' }).get('users');
+    await new Yesttp({ baseUrl: 'https://api.backend.com' }).get('users');
 
     // Then
     expect(window.fetch).toHaveBeenCalledWith('https://api.backend.com/users', expect.anything());
@@ -142,7 +142,7 @@ describe(Lighttp, () => {
 
   it('should add search parameters at the end of the URL', async () => {
     // When
-    await new Lighttp().get('/users', { searchParams: { abc: '123' } });
+    await new Yesttp().get('/users', { searchParams: { abc: '123' } });
 
     // Then
     expect(window.fetch).toHaveBeenCalledWith('/users?abc=123', expect.anything());
@@ -150,7 +150,7 @@ describe(Lighttp, () => {
 
   it('should allow custom headers', async () => {
     // When
-    await new Lighttp().get('/endpoint', { headers: { 'Authorization': 'Quack' } });
+    await new Yesttp().get('/endpoint', { headers: { 'Authorization': 'Quack' } });
 
     // Then
     expect(window.fetch).toHaveBeenCalledWith('/endpoint', expect.objectContaining({
@@ -162,7 +162,7 @@ describe(Lighttp, () => {
 
   it('should automatically stringify and set the content type to `application/json` for JSON bodies', async () => {
     // When
-    await new Lighttp().post('/json', {
+    await new Yesttp().post('/json', {
       bodyJson: { abc: 123 },
     });
 
@@ -176,7 +176,7 @@ describe(Lighttp, () => {
 
   it('should not set the content type to `application/json` for non-JSON bodies', async () => {
     // When
-    await new Lighttp().post('/json', {
+    await new Yesttp().post('/json', {
       body: 'Hello!',
     });
 
@@ -193,7 +193,7 @@ describe(Lighttp, () => {
     mockFetchSuccess({ status: 200, body: '{"hello":"world"}' });
 
     // When
-    const response = await new Lighttp().get('/endpoint');
+    const response = await new Yesttp().get('/endpoint');
 
     // Then
     expect(response.body).toEqual('{"hello":"world"}');
@@ -205,7 +205,7 @@ describe(Lighttp, () => {
     mockFetchSuccess({ status: 200, body: 'Tada 🎉' });
 
     // When
-    const response = await new Lighttp().get('/endpoint');
+    const response = await new Yesttp().get('/endpoint');
 
     // Then
     expect(response.body).toEqual('Tada 🎉');
@@ -218,8 +218,8 @@ describe(Lighttp, () => {
     mockFetchError(new Error('Server unavailable'));
 
     // When
-    new Lighttp().get('/endpoint')
-      .catch((err: Lighttp.ResponseError) => {
+    new Yesttp().get('/endpoint')
+      .catch((err: Yesttp.ResponseError) => {
 
         // Then
         expect(err.request).toBeDefined();
@@ -234,8 +234,8 @@ describe(Lighttp, () => {
     mockFetchSuccess({ body: '{"error":"email_invalid"}', status: 400 });
 
     // When
-    new Lighttp().get('/endpoint')
-      .catch((err: Lighttp.ResponseError) => {
+    new Yesttp().get('/endpoint')
+      .catch((err: Yesttp.ResponseError) => {
 
         // Then
         expect(err.request).toBeDefined();
