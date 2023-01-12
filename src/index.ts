@@ -1,76 +1,77 @@
 export class Yesttp {
 
+  private static get globalWindowFetch(): typeof fetch | undefined {
+    if (typeof window !== 'undefined' && window.fetch) return window.fetch.bind(window);
+    if (typeof global !== 'undefined' && global.fetch) return global.fetch.bind(global);
+    return undefined;
+  }
+
   private readonly baseUrl: string | undefined;
-  private readonly fetchInstance: typeof fetch;
+  private readonly fetchInstance: typeof fetch | undefined;
   private readonly requestInterceptor: Yesttp.RequestInterceptor;
   private readonly responseErrorInterceptor: Yesttp.ResponseErrorInterceptor;
   private readonly responseSuccessInterceptor: Yesttp.ResponseSuccessInterceptor;
 
-  private static get windowFetch(): typeof fetch {
-    if (typeof window !== 'undefined' && window.fetch) return window.fetch.bind(window);
-    if (typeof global !== 'undefined' && global.fetch) return global.fetch.bind(global);
-    console.error('Could not find fetch function on `global` or `window`; please make it available or provide a custom fetch function');
-    return undefined as unknown as typeof fetch;
-  }
-
   public constructor({
     baseUrl = undefined,
-    fetchInstance = Yesttp.windowFetch,
     requestInterceptor = Yesttp.defaultRequestInterceptor,
     responseErrorIntercepter = Yesttp.defaultResponseErrorInterceptor,
     responseSuccessInterceptor = Yesttp.defaultResponseSuccessInterceptor,
   } = {} as Yesttp.ConstructorArgs) {
     this.baseUrl = baseUrl;
-    this.fetchInstance = fetchInstance;
+    this.fetchInstance = Yesttp.globalWindowFetch;
     this.requestInterceptor = requestInterceptor;
     this.responseErrorInterceptor = responseErrorIntercepter;
     this.responseSuccessInterceptor = responseSuccessInterceptor;
   }
 
-  public get<T = any>(url: string, options = {} as Omit<Yesttp.RequestOptions, 'url' | 'method' | 'body' | 'bodyJson'>): Promise<Yesttp.Response<T>> {
+  public get<T = any>(url: string, options = {} as Yesttp.GetOptions): Promise<Yesttp.Response<T>> {
     return this.makeRequest({ ...options, url, method: 'GET' });
   }
 
-  public post<T = any>(url: string, options = {} as Omit<Yesttp.RequestOptions, 'url' | 'method'>): Promise<Yesttp.Response<T>> {
+  public post<T = any>(url: string, options = {} as Yesttp.RequestOptions): Promise<Yesttp.Response<T>> {
     return this.makeRequest({ ...options, url, method: 'POST' });
   }
 
-  public put<T = any>(url: string, options = {} as Omit<Yesttp.RequestOptions, 'url' | 'method'>): Promise<Yesttp.Response<T>> {
+  public put<T = any>(url: string, options = {} as Yesttp.RequestOptions): Promise<Yesttp.Response<T>> {
     return this.makeRequest({ ...options, url, method: 'PUT' });
   }
 
-  public patch<T = any>(url: string, options = {} as Omit<Yesttp.RequestOptions, 'url' | 'method'>): Promise<Yesttp.Response<T>> {
+  public patch<T = any>(url: string, options = {} as Yesttp.RequestOptions): Promise<Yesttp.Response<T>> {
     return this.makeRequest({ ...options, url, method: 'PATCH' });
   }
 
-  public delete<T = any>(url: string, options = {} as Omit<Yesttp.RequestOptions, 'url' | 'method'>): Promise<Yesttp.Response<T>> {
+  public delete<T = any>(url: string, options = {} as Yesttp.RequestOptions): Promise<Yesttp.Response<T>> {
     return this.makeRequest({ ...options, url, method: 'DELETE' });
   }
 
-  private async makeRequest<T>(opts: Yesttp.RequestOptions): Promise<Yesttp.Response<T>> {
+  private async makeRequest<T>(opts: Yesttp.RequestSummary): Promise<Yesttp.Response<T>> {
+    if (!this.fetchInstance) {
+      throw new Error('[Yesttp] Could not find fetch function on `global` or `window`, please make it available there');
+    }
     const options = await this.requestInterceptor({
       ...opts,
       url: this.constructCompleteUrl(opts),
-      headers: {
+      headers: this.removeUndefinedMappings({
         ...opts.headers,
         'Content-Type': opts.headers?.['Content-Type'] || (opts.bodyJson ? 'application/json' : undefined),
-      },
+      }),
     });
 
     let response: Response;
     try {
       response = await this.fetchInstance(options.url, {
         method: options.method,
-        headers: this.removeUndefinedMappings(options.headers || {}),
+        headers: options.headers as Record<string, string>,
         body: options.bodyJson ? JSON.stringify(opts.bodyJson) : options.body,
       });
     } catch (e) {
-      return this.responseErrorInterceptor(options, { status: 0, body: undefined, bodyJson: undefined, headers: {} });
+      return this.responseErrorInterceptor(options, { status: 0, body: undefined, bodyJson: undefined, headers: {} }, e);
     }
     return this.handleResponse(options, response);
   }
 
-  private async handleResponse<T>(request: Yesttp.RequestOptions, fetchResponse: Response): Promise<Yesttp.Response<T>> {
+  private async handleResponse<T>(request: Yesttp.RequestSummary, fetchResponse: Response): Promise<Yesttp.Response<T>> {
     let text: string | undefined;
     let json: T | undefined;
     let invalidJsonResponse = false;
@@ -88,7 +89,7 @@ export class Yesttp {
       body: text as string,
       get bodyJson(): T {
         if (invalidJsonResponse) {
-          console.warn('You\'re trying to access the response body as JSON, but it could not be parsed as such');
+          console.warn('[Yesttp] You\'re trying to access the response body as JSON, but it could not be parsed as such');
         }
         return json as T;
       }
@@ -103,7 +104,7 @@ export class Yesttp {
     return this.responseErrorInterceptor(request, response);
   }
 
-  private constructCompleteUrl({ url, searchParams }: Yesttp.RequestOptions): string {
+  private constructCompleteUrl({ url, searchParams }: Yesttp.RequestSummary): string {
     let completeUrl = '';
     if (url.match(/^https?:\/\//)) {
       completeUrl += url;
@@ -151,34 +152,41 @@ export class Yesttp {
 
 export namespace Yesttp {
 
-  export type RequestInterceptor = (request: RequestOptions) => Promise<RequestOptions>;
+  export type RequestInterceptor = (request: RequestSummary) => Promise<RequestSummary>;
   export const defaultRequestInterceptor: RequestInterceptor = (request) => Promise.resolve(request);
 
-  export type ResponseErrorInterceptor = (request: RequestOptions, response: ResponseWithOptionalBody) => Promise<any>;
-  export const defaultResponseErrorInterceptor: ResponseErrorInterceptor = (request, response) => {
+  export type ResponseErrorInterceptor = (request: RequestSummary, response: ResponseWithOptionalBody, cause?: any) => Promise<any>;
+  export const defaultResponseErrorInterceptor: ResponseErrorInterceptor = (request, response, cause) => {
     const error: Yesttp.ResponseError = { request, response };
-    console.error('An HTTP error occurred', error);
+    const errorArgs = ['[Yesttp] An HTTP error occurred', error];
+    if (cause) errorArgs.push(cause);
+    console.error(...errorArgs);
     throw error;
   };
 
-  export type ResponseSuccessInterceptor = (request: RequestOptions, response: ResponseWithOptionalBody) => Promise<any>;
+  export type ResponseSuccessInterceptor = (request: RequestSummary, response: ResponseWithOptionalBody) => Promise<any>;
   export const defaultResponseSuccessInterceptor: Yesttp.ResponseErrorInterceptor = (request, response) => Promise.resolve(response);
 
   export type ConstructorArgs = {
     baseUrl?: string;
-    fetchInstance?: typeof fetch,
     requestInterceptor?: RequestInterceptor;
     responseErrorIntercepter?: ResponseErrorInterceptor;
     responseSuccessInterceptor?: ResponseSuccessInterceptor;
   };
 
-  export type RequestOptions = {
-    url: string;
+  export type GetOptions = {
     searchParams?: Record<string, string | undefined>;
-    method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
     headers?: Record<string, string | undefined>;
+  };
+
+  export type RequestOptions = GetOptions & {
     body?: any;
     bodyJson?: any;
+  };
+
+  export type RequestSummary = RequestOptions & {
+    url: string;
+    method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   };
 
   export type Response<T> = {
@@ -189,7 +197,7 @@ export namespace Yesttp {
   };
 
   export type ResponseError = {
-    request: RequestOptions;
+    request: RequestSummary;
     response: ResponseWithOptionalBody;
   };
 

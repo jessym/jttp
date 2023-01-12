@@ -34,28 +34,21 @@ describe(Yesttp, () => {
 
     // Then
     expect(console.error).not.toHaveBeenCalled();
+    expect(console.warn).not.toHaveBeenCalled();
   });
 
-  it('should initialize with an error when both `window.fetch` and `global.fetch` are unavailable', async () => {
+  it('should throw an error when attempting to make a request without `window.fetch` and `global.fetch`', (done) => {
     // Given
     window.fetch = undefined as any;
 
     // When
-    new Yesttp();
+    const action = () => new Yesttp().get('/users');
 
     // Then
-    expect(console.error).toHaveBeenCalledWith('Could not find fetch function on `global` or `window`; please make it available or provide a custom fetch function');
-  });
-
-  it('should initialize without error when a custom fetch function is provided, but both `window.fetch` and `global.fetch` are unavailable', async () => {
-    // Given
-    window.fetch = undefined as any;
-
-    // When
-    new Yesttp({ fetchInstance: jest.fn() });
-
-    // Then
-    expect(console.error).not.toHaveBeenCalled();
+    action().catch(err => {
+      expect(err.message).toEqual('[Yesttp] Could not find fetch function on `global` or `window`, please make it available there');
+      done();
+    });
   });
 
   it('should be able to make a GET request', async () => {
@@ -210,21 +203,22 @@ describe(Yesttp, () => {
     // Then
     expect(response.body).toEqual('Tada 🎉');
     expect(response.bodyJson).toEqual(undefined);
-    expect(console.warn).toHaveBeenCalledWith('You\'re trying to access the response body as JSON, but it could not be parsed as such');
+    expect(console.warn).toHaveBeenCalledWith('[Yesttp] You\'re trying to access the response body as JSON, but it could not be parsed as such');
   });
 
   it('should throw an error if the server could not be reached', (done) => {
     // Given
-    mockFetchError(new Error('Server unavailable'));
+    const error = new Error('Server unavailable');
+    mockFetchError(error);
 
     // When
     new Yesttp().get('/endpoint')
-      .catch((err: Yesttp.ResponseError) => {
+      .catch((e: Yesttp.ResponseError) => {
 
         // Then
-        expect(err.request).toBeDefined();
-        expect(err.response.status).toEqual(0);
-        expect(console.error).toHaveBeenCalledWith('An HTTP error occurred', expect.anything());
+        expect(e.request).toBeDefined();
+        expect(e.response.status).toEqual(0);
+        expect(console.error).toHaveBeenCalledWith('[Yesttp] An HTTP error occurred', expect.anything(), error);
         done();
       });
   });
@@ -242,7 +236,7 @@ describe(Yesttp, () => {
         expect(err.response.status).toEqual(400);
         expect(err.response.body).toEqual('{"error":"email_invalid"}');
         expect(err.response.bodyJson).toEqual({ error: 'email_invalid' });
-        expect(console.error).toHaveBeenCalledWith('An HTTP error occurred', expect.anything());
+        expect(console.error).toHaveBeenCalledWith('[Yesttp] An HTTP error occurred', expect.anything());
         done();
       });
   });

@@ -1,8 +1,18 @@
 # Yesttp: Lightweight HTTP Client
 
+## Installation
+
+```
+npm install yesttp
+
+yarn add yesttp
+```
+
 ## Creating an instance
 
 ```ts
+import { Yesttp } from 'yesttp';
+
 const yesttp = new Yesttp();
 ```
 
@@ -12,7 +22,7 @@ The class can also be instantiated with a configuration object:
 const yesttp = new Yesttp({
   baseUrl: 'https://api.backend.com',
   requestInterceptor: (request) => Promise.resolve(request),
-  responseErrorIntercepter: (request, response) => Promise.reject(response),
+  responseErrorIntercepter: (request, response) => Promise.reject({ request, response }),
   responseSuccessInterceptor: (request, response) => Promise.resolve(response),
 });
 ```
@@ -27,10 +37,15 @@ yesttp.post('/users', {
 });
 ```
 
-Here's a list of the available request options:
+Here's an overview of the available request options:
 
 ```ts
-type RequestOptions = {
+export type GetOptions = {
+  searchParams?: Record<string, string | undefined>;
+  headers?: Record<string, string | undefined>;
+};
+
+export type RequestOptions = {
   searchParams?: Record<string, string | undefined>;
   headers?: Record<string, string | undefined>;
   body?: any;
