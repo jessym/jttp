@@ -54,7 +54,7 @@ export class Yesttp {
       url: this.constructCompleteUrl(opts),
       headers: this.removeUndefinedMappings({
         ...opts.headers,
-        'Content-Type': opts.headers?.['Content-Type'] || (opts.bodyJson ? 'application/json' : undefined),
+        'Content-Type': opts.headers?.['Content-Type'] || (opts.body ? 'application/json' : undefined),
       }),
     });
 
@@ -63,10 +63,10 @@ export class Yesttp {
       response = await this.fetchInstance(options.url, {
         method: options.method,
         headers: options.headers as Record<string, string>,
-        body: options.bodyJson ? JSON.stringify(opts.bodyJson) : options.body,
+        body: options.body ? JSON.stringify(opts.body) : options.bodyRaw,
       });
     } catch (e) {
-      return this.responseErrorInterceptor(options, { status: 0, body: undefined, bodyJson: undefined, headers: {} }, e);
+      return this.responseErrorInterceptor(options, { status: 0, body: undefined, bodyRaw: undefined, headers: {} }, e);
     }
     return this.handleResponse(options, response);
   }
@@ -86,8 +86,8 @@ export class Yesttp {
     const response: Yesttp.Response<T> = {
       headers: this.parseFetchHeaders(fetchResponse.headers || new Headers()),
       status: fetchResponse?.status,
-      body: text as string,
-      get bodyJson(): T {
+      bodyRaw: text as string,
+      get body(): T {
         if (invalidJsonResponse) {
           console.warn('[Yesttp] You\'re trying to access the response body as JSON, but it could not be parsed as such');
         }
@@ -181,7 +181,7 @@ export namespace Yesttp {
 
   export type RequestOptions = GetOptions & {
     body?: any;
-    bodyJson?: any;
+    bodyRaw?: any;
   };
 
   export type RequestSummary = RequestOptions & {
@@ -192,8 +192,8 @@ export namespace Yesttp {
   export type Response<T> = {
     status: number;
     headers: Record<string, string>;
-    body: string;
-    bodyJson: T;
+    body: T;
+    bodyRaw: string;
   };
 
   export type ResponseError = {
@@ -201,7 +201,7 @@ export namespace Yesttp {
     response: ResponseWithOptionalBody;
   };
 
-  type ResponseWithOptionalBody = AllowUndefined<Response<any>, 'body' | 'bodyJson'>;
+  type ResponseWithOptionalBody = AllowUndefined<Response<any>, 'body' | 'bodyRaw'>;
 
   type AllowUndefined<T, K extends keyof T> = Omit<T, K> & {
     [P in K]: T[K] | undefined;

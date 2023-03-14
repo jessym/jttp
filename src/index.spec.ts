@@ -153,10 +153,10 @@ describe(Yesttp, () => {
     }));
   });
 
-  it('should automatically stringify and set the content type to `application/json` for JSON bodies', async () => {
+  it('should automatically stringify and set the content type to `application/json` for bodies', async () => {
     // When
     await new Yesttp().post('/json', {
-      bodyJson: { abc: 123 },
+      body: { abc: 123 },
     });
 
     // Then
@@ -167,10 +167,10 @@ describe(Yesttp, () => {
     }));
   });
 
-  it('should not set the content type to `application/json` for non-JSON bodies', async () => {
+  it('should not set the content type to `application/json` for raw bodies', async () => {
     // When
     await new Yesttp().post('/json', {
-      body: 'Hello!',
+      bodyRaw: 'Hello!',
     });
 
     // Then
@@ -181,6 +181,18 @@ describe(Yesttp, () => {
     }));
   });
 
+  it('should allow for a typed body property in the response object', async () => {
+    // Given
+    type ExampleResponse = { hello: string };
+    mockFetchSuccess({ status: 200, body: '{"hello":"world"}' });
+
+    // When
+    const response = await new Yesttp().get<ExampleResponse>('/endpoint');
+
+    // Then
+    expect(response.body.hello).toEqual('world');
+  });
+
   it('should return both text and json in the response', async () => {
     // Given
     mockFetchSuccess({ status: 200, body: '{"hello":"world"}' });
@@ -189,8 +201,8 @@ describe(Yesttp, () => {
     const response = await new Yesttp().get('/endpoint');
 
     // Then
-    expect(response.body).toEqual('{"hello":"world"}');
-    expect(response.bodyJson).toEqual({ hello: 'world' });
+    expect(response.bodyRaw).toEqual('{"hello":"world"}');
+    expect(response.body).toEqual({ hello: 'world' });
   });
 
   it('should return undefined for json and log a warning when attempting to access it as such if the response is non-json', async () => {
@@ -201,8 +213,8 @@ describe(Yesttp, () => {
     const response = await new Yesttp().get('/endpoint');
 
     // Then
-    expect(response.body).toEqual('Tada 🎉');
-    expect(response.bodyJson).toEqual(undefined);
+    expect(response.bodyRaw).toEqual('Tada 🎉');
+    expect(response.body).toEqual(undefined);
     expect(console.warn).toHaveBeenCalledWith('[Yesttp] You\'re trying to access the response body as JSON, but it could not be parsed as such');
   });
 
@@ -234,8 +246,8 @@ describe(Yesttp, () => {
         // Then
         expect(err.request).toBeDefined();
         expect(err.response.status).toEqual(400);
-        expect(err.response.body).toEqual('{"error":"email_invalid"}');
-        expect(err.response.bodyJson).toEqual({ error: 'email_invalid' });
+        expect(err.response.bodyRaw).toEqual('{"error":"email_invalid"}');
+        expect(err.response.body).toEqual({ error: 'email_invalid' });
         expect(console.error).toHaveBeenCalledWith('[Yesttp] An HTTP error occurred', expect.anything());
         done();
       });

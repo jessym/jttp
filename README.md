@@ -1,11 +1,31 @@
 # Yesttp: Lightweight HTTP Client
 
+This is a lightweight HTTP client, with basic support for request and response interceptors.
+
+By default, it uses JSON serialization and deserialization for both request and response bodies.
+
 ## Installation
 
 ```
 npm install yesttp
 
 yarn add yesttp
+```
+
+## Quick Example
+
+```ts
+import { Yesttp } from 'yesttp';
+
+const response = await new Yesttp().post('https://api.backend.com/users', {
+  body: {
+    name: 'Bob',
+    age: 42,
+  },
+});
+
+// Assuming the backend JSON response contains an `id` field
+const userId = response.body.id;
 ```
 
 ## Creating an instance
@@ -49,7 +69,7 @@ export type RequestOptions = {
   searchParams?: Record<string, string | undefined>;
   headers?: Record<string, string | undefined>;
   body?: any;
-  bodyJson?: any;
+  bodyRaw?: any;
 };
 ```
 
@@ -65,7 +85,7 @@ Here, the response is an object with the following properties:
 type Response<T> = {
   status: number;
   headers: Record<string, string>;
-  body: string;
-  bodyJson: T;
+  body: T;
+  bodyRaw: string;
 };
 ```
