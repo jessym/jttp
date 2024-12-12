@@ -64,6 +64,7 @@ export class Yesttp {
         method: options.method,
         headers: options.headers as Record<string, string>,
         body: options.body ? JSON.stringify(opts.body) : options.bodyRaw,
+        credentials: options.credentials,
       });
     } catch (e) {
       return this.responseErrorInterceptor(options, { status: 0, body: undefined, bodyRaw: undefined, headers: {} }, e);
@@ -177,6 +178,7 @@ export namespace Yesttp {
   export type GetOptions = {
     searchParams?: Record<string, string | undefined>;
     headers?: Record<string, string | undefined>;
+    credentials?: RequestCredentials;
   };
 
   export type RequestOptions = GetOptions & {

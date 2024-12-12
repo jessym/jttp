@@ -205,6 +205,19 @@ describe(Yesttp, () => {
     expect(response.body).toEqual({ hello: 'world' });
   });
 
+  it('should pass through the `credentials` option', async () => {
+    // When
+    await new Yesttp().post('/', {
+      credentials: 'include',
+    });
+
+    // Then
+    expect(window.fetch).toHaveBeenCalledWith('/', expect.objectContaining({
+      method: 'POST',
+      credentials: 'include',
+    }));
+  });
+
   it('should return undefined for json and log a warning when attempting to access it as such if the response is non-json', async () => {
     // Given
     mockFetchSuccess({ status: 200, body: 'Tada 🎉' });

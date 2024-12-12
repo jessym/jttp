@@ -1,15 +1,19 @@
 {
   "compilerOptions": {
-    "module": "CommonJS",
+    "module": "ESNext",
     "outDir": "./lib/",
     "declaration": true,
-    "lib": ["es6", "dom"],
+    "lib": ["ESNext", "dom"],
     "strict": true,
     "esModuleInterop": true,
     "target": "es5",
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "types": [
+      "node",
+      "jest"
+    ]
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "lib", "src/**/*.spec.ts"]
+ "include": ["src/**/*"],
+ "exclude": ["**/*.spec.ts"]
 }
