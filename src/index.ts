@@ -61,9 +61,6 @@ export class Yesttp {
         'Content-Type': opts.headers?.['Content-Type'] || (opts.body ? 'application/json' : undefined),
       }),
     });
-    if (this.credentials) {
-      console.log(options);
-    }
 
     let response: Response;
     try {
