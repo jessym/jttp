@@ -205,7 +205,18 @@ describe(Yesttp, () => {
     expect(response.body).toEqual({ hello: 'world' });
   });
 
-  it('should pass through the `credentials` option', async () => {
+  it('should pass through the "credentials" setting at constructor time', async () => {
+    // When
+    await new Yesttp({ credentials: 'same-origin' }).post('/');
+
+    // Then
+    expect(window.fetch).toHaveBeenCalledWith('/', expect.objectContaining({
+      method: 'POST',
+      credentials: 'same-origin',
+    }));
+  });
+
+  it('should pass through the "credentials" setting at request time', async () => {
     // When
     await new Yesttp().post('/', {
       credentials: 'include',
@@ -215,6 +226,30 @@ describe(Yesttp, () => {
     expect(window.fetch).toHaveBeenCalledWith('/', expect.objectContaining({
       method: 'POST',
       credentials: 'include',
+    }));
+  });
+
+  it('should give priority to request "credentials" instead of construct "credentials"', async () => {
+    // When
+    await new Yesttp({ credentials: 'same-origin' }).post('/', {
+      credentials: 'omit',
+    });
+
+    // Then
+    expect(window.fetch).toHaveBeenCalledWith('/', expect.objectContaining({
+      method: 'POST',
+      credentials: 'omit',
+    }));
+  });
+
+  it('should not pass along credentials when they aren\'t supplied', async () => {
+    // When
+    await new Yesttp().post('/');
+
+    // Then
+    expect(window.fetch).toHaveBeenCalledWith('/', expect.objectContaining({
+      method: 'POST',
+      credentials: undefined,
     }));
   });
 

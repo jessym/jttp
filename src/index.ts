@@ -7,6 +7,7 @@ export class Yesttp {
   }
 
   private readonly baseUrl: string | undefined;
+  private readonly credentials: RequestCredentials | undefined;
   private readonly fetchInstance: typeof fetch | undefined;
   private readonly requestInterceptor: Yesttp.RequestInterceptor;
   private readonly responseErrorInterceptor: Yesttp.ResponseErrorInterceptor;
@@ -14,11 +15,13 @@ export class Yesttp {
 
   public constructor({
     baseUrl = undefined,
+    credentials = undefined,
     requestInterceptor = Yesttp.defaultRequestInterceptor,
     responseErrorIntercepter = Yesttp.defaultResponseErrorInterceptor,
     responseSuccessInterceptor = Yesttp.defaultResponseSuccessInterceptor,
   } = {} as Yesttp.ConstructorArgs) {
     this.baseUrl = baseUrl;
+    this.credentials = credentials;
     this.fetchInstance = Yesttp.globalWindowFetch;
     this.requestInterceptor = requestInterceptor;
     this.responseErrorInterceptor = responseErrorIntercepter;
@@ -52,18 +55,22 @@ export class Yesttp {
     const options = await this.requestInterceptor({
       ...opts,
       url: this.constructCompleteUrl(opts),
+      credentials: opts.credentials || this.credentials,
       headers: this.removeUndefinedMappings({
         ...opts.headers,
         'Content-Type': opts.headers?.['Content-Type'] || (opts.body ? 'application/json' : undefined),
       }),
     });
+    if (this.credentials) {
+      console.log(options);
+    }
 
     let response: Response;
     try {
       response = await this.fetchInstance(options.url, {
         method: options.method,
         headers: options.headers as Record<string, string>,
-        body: options.body ? JSON.stringify(opts.body) : options.bodyRaw,
+        body: options.body ? JSON.stringify(options.body) : options.bodyRaw,
         credentials: options.credentials,
       });
     } catch (e) {
@@ -170,6 +177,7 @@ export namespace Yesttp {
 
   export type ConstructorArgs = {
     baseUrl?: string;
+    credentials?: RequestCredentials;
     requestInterceptor?: RequestInterceptor;
     responseErrorIntercepter?: ResponseErrorInterceptor;
     responseSuccessInterceptor?: ResponseSuccessInterceptor;
