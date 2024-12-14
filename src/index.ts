@@ -48,17 +48,17 @@ export class Yesttp {
     return this.makeRequest({ ...options, url, method: 'DELETE' });
   }
 
-  private async makeRequest<T>(opts: Yesttp.RequestSummary): Promise<Yesttp.Response<T>> {
+  private async makeRequest<T>(requestOptions: Yesttp.RequestSummary): Promise<Yesttp.Response<T>> {
     if (!this.fetchInstance) {
       throw new Error('[Yesttp] Could not find fetch function on `global` or `window`, please make it available there');
     }
     const options = await this.requestInterceptor({
-      ...opts,
-      url: this.constructCompleteUrl(opts),
-      credentials: opts.credentials || this.credentials,
+      ...requestOptions,
+      url: this.constructCompleteUrl(requestOptions),
+      credentials: requestOptions.credentials || this.credentials,
       headers: this.removeUndefinedMappings({
-        ...opts.headers,
-        'Content-Type': opts.headers?.['Content-Type'] || (opts.body ? 'application/json' : undefined),
+        ...requestOptions.headers,
+        'Content-Type': requestOptions.headers?.['Content-Type'] || (requestOptions.body ? 'application/json' : undefined),
       }),
     });
 
