@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "ESNext",
+    "module": "CommonJS",
     "outDir": "./lib/",
     "declaration": true,
     "lib": ["ESNext", "dom"],
